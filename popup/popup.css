@@ -242,7 +242,7 @@ button#compose {
 }
 
 .accounts-list .logout-account {
-    color: #808080;
+    color: #660000;
     font-size: 0.9em;
 }
 
@@ -277,9 +277,13 @@ button#compose {
     justify-content: center;
 }
 
-.logout-account:hover{
-    background: #ffe1e1;
-    color: #ef4747;
+.account-buttons {
+    display: flex;
+}
+
+.open-account {
+    font-size: 0.9em;
+    color: #4073A3;
 }
 
 #logout-total{

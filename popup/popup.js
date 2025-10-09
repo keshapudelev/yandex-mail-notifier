@@ -14,7 +14,7 @@ const MESSAGE_TEMPLATE = `<li class="message-item">
 
 const ACCOUNT_TEMPLATE = `<tr class="account-item"><td><button class="select-account"></button></td>
         <td class="account-mailbox__unreaded"></td>
-        <td class="account-buttons"><button class="logout-account">Выйти</button></td>
+        <td class="account-buttons"><button class="open-account">Открыть</button><button class="logout-account">Выйти</button></td>
     </tr>`
 
 let accounts = {};

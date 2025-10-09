@@ -96,6 +96,10 @@ document.body.addEventListener('click', (e) => {
             }
         })
     }
+    if(e.target.closest(".open-account")){
+        const uid = e.target.closest('.account-item').getAttribute("data-uid");
+        chrome.tabs.create({url: `https://mail.yandex.ru?uid=${uid}`});
+    }
     if(e.target.closest(".message-button__element")){
         const messageContainer = e.target.closest(".message-item");
         const mid = messageContainer.getAttribute("data-mid");
