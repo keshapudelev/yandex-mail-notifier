@@ -1,8 +1,8 @@
-const audio = new Audio();
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (message.target !== 'offscreen') return;
 
     if (message.type === 'PLAY_SOUND') {
+        const audio = new Audio();
         audio.src = message.sound;
         audio.play();
     }
