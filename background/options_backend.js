@@ -79,6 +79,26 @@ class Settings{
             chrome.action.setPopup({popup:'/popup/popup.html'})
         }
     }
+
+    async getAccountSettings() {
+        const settings = (await chrome.storage.local.get(["settingsPerAccount"]))["settingsPerAccount"];
+        return settings ?? {}
+    }
+
+    async updateAccountSettings(uid, preference, value) {
+        const settings = await this.getAccountSettings();
+        if(!(uid.toString() in settings)) settings[uid.toString()]={};
+
+        settings[uid][preference] = value;
+        await chrome.storage.local.set({"settingsPerAccount": settings});
+        return settings;
+    }
+
+    checkAccountSetting(accountSettings, uid, preference) {
+        if(!(uid in accountSettings)) return null;
+        if(!(preference in accountSettings[uid])) return null;
+        return accountSettings[uid][preference];
+    }
 }
 
 const settings = new Settings();

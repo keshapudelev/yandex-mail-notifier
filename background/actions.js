@@ -13,32 +13,44 @@ export function openLoginPage() {
     chrome.tabs.create({"url":"https://passport.yandex.ru/auth?retpath=https%3A%2F%2Fmail.yandex.ru"});
 }
 
-
-export async function getTotalCount() {
+export async function getCounters(){
     const countersData = await apiConnector.fetchCounters();
     if (!countersData) {
         return;
     }
     let totalMessages = 0;
+    const counters = {}
+    const accountSettings = await Settings.getAccountSettings();
     for (let account of countersData) {
-        totalMessages += account.data.counters.unread;
+        if(Settings.checkAccountSetting(accountSettings, account.uid, "counter") !== false) {
+            totalMessages += account.data.counters.unread;
+        }
+        counters[account.uid] = account.data.counters
     }
-    return totalMessages;
+    return {
+        counters: counters,
+        total: totalMessages
+    }
+}
+
+
+export async function getTotalCount() {
+    const countersData = await getCounters();
+    if (!countersData) {
+        return;
+    }
+    return countersData.total;
 }
 
 export async function getCurrentCount() {
     if(Accounts.currentAccount === null) {
         await Accounts.loadAccounts();
     }
-    const countersData = await apiConnector.fetchCounters();
+    const countersData = await getCounters();
     if (!countersData) {
         return;
     }
-    const currentCounter = countersData.find((counter) => counter.uid.toString() === Accounts.currentAccount.toString());
-    if(!currentCounter){
-        return;
-    }
-    return currentCounter.data.counters.unread;
+    return countersData.counters[Accounts.currentAccount].unread;
 }
 
 export async function fetchYandexMailCounters() {

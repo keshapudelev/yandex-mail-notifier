@@ -1,7 +1,7 @@
 import Accounts from "./accounts.js";
 import ApiConnector from "./ApiConnector.js";
 import * as actions from "./actions.js";
-import {openMessage} from "./actions.js";
+import {getCounters, openMessage} from "./actions.js";
 import * as State_controller from "./state_controller.js";
 import State from "./state_controller.js";
 import Settings from "./options_backend.js";
@@ -50,8 +50,11 @@ class Popup {
     }
 
     fetchCounters() {
-        ApiConnector.fetchCounters()
-            .then(counters => this.sendMessage("loadCounters", counters)).catch(e => {
+        actions.getCounters()
+            .then(counters => {
+                this.sendMessage("loadCounters", counters)
+                actions.fetchYandexMailCounters()
+            }).catch(e => {
             if (State.getState() === State_controller.STATE_OFFLINE){
                 this.showStateMessage(State.getHumanMessage(State.getState()), 2);
                 return
@@ -131,6 +134,20 @@ export function listenToPopup() {
                         return null;
                     }
                 }).then((newVersionInfo)=>sendResponse(newVersionInfo));
+                break;
+            case "getAccountSettings":
+                Settings.getAccountSettings().then(settings=>sendResponse(settings));
+                return true;
+                break;
+            case "updateAccountSettings":
+                Settings.updateAccountSettings(
+                    message.data.uid,
+                    message.data.preference,
+                    message.data.value,
+                ).then(settings=>{
+                    sendResponse(settings)
+                });
+                return true;
                 break;
             default:
                 break;

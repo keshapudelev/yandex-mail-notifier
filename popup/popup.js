@@ -12,7 +12,17 @@ const MESSAGE_TEMPLATE = `<li class="message-item">
             </div>
         </li>`
 
-const ACCOUNT_TEMPLATE = `<tr class="account-item"><td><button class="select-account"></button></td>
+const ACCOUNT_TEMPLATE = `<tr class="account-item">
+        <td><button class="account-switcher" data-action="open-settings"><svg class="account-settings" viewbox="0 0 120 120"><use href="icons/accounts/icons-pack.svg#settings"></use></button></svg>
+        </td>
+        <td class="name-column">
+            <button class="select-account"></button>
+            <div class="button-icons">
+                <button class="account-switcher" data-action="sound" title="Включить звуковые уведомления"><svg viewBox="0 0 120 120"><use href="icons/accounts/icons-pack.svg#sound"></use></svg></button>
+                <button class="account-switcher" data-action="notification" title="Включить всплывающие уведомления"><svg viewBox="0 0 120 120"><use href="icons/accounts/icons-pack.svg#notifications"></use></svg></button>
+                <button class="account-switcher" data-action="counter" title="Учитывать в счётчике"><svg viewBox="0 0 120 120"><use href="icons/accounts/icons-pack.svg#counters"></use></svg></button>
+            </div>
+        </td>
         <td class="account-mailbox__unreaded"></td>
         <td class="account-buttons"><button class="open-account">Открыть</button><button class="logout-account">Выйти</button></td>
     </tr>`
@@ -121,7 +131,7 @@ function fillWidget(){
 }
 
 function loadMessages(){
-    document.body.setAttribute("data-mode", "spinner")
+    setWidgetMode("spinner")
     chrome.runtime.sendMessage({
         action: "loadMessages",
         target: "background"
@@ -132,8 +142,13 @@ function setCurrentUserUnreaded(value){
     document.querySelector(".current-mailbox__unreaded").textContent = value;
 }
 
+function setWidgetMode(mode) {
+    document.querySelectorAll(".account-item[data-mode=settings]").forEach(item => item.removeAttribute("data-mode"));
+    document.body.setAttribute("data-mode", mode)
+}
+
 function loadHeaderInfo(){
-    document.body.setAttribute("data-mode", "spinner")
+    setWidgetMode("spinner")
     loadAccountData()
     loadCounters()
 }
@@ -172,11 +187,8 @@ function updateAccountData(accountsData){
 
 function updateCounters(countersData) {
     counters = {};
-    let total = 0;
-    for(let counter of countersData){
-        total += counter.data.counters.unread;
-        counters[counter.uid] = counter.data.counters;
-    }
+    let total = countersData.total;
+    counters = countersData.counters;
     document.querySelector(".total-mailbox__unreaded").textContent = total;
     if(currentAccount){
         setCurrentUserUnreaded(counters[currentAccount.uid].unread)
@@ -207,7 +219,7 @@ function updateMessages(messageTextData) {
                 message.getAttribute("fid"),
             ));
         }
-        document.body.setAttribute("data-mode", "message-list")
+        setWidgetMode("message-list")
     }
     messagesLoaded = true;
 }

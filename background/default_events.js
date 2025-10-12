@@ -8,17 +8,23 @@ import Settings from "./options_backend.js"
 async function newMessageResolved(message) {
     console.log("📨 Обнаружено новое сообщение");
     let settings = await Settings.getSettings();
-
-    if (settings.playSound) notifications.playNotificationSound();
+    const accountSettings = await Settings.getAccountSettings();
+    if (settings.playSound) {
+        if(Settings.checkAccountSetting(accountSettings, message.uid, "sound") !== false) {
+            notifications.playNotificationSound();
+        }
+    }
     if (settings.notifications) {
-        notifications.showNotification("new_message|" + message.mid.toString() + "|" + message.uid.toString(), message.hdr_subject, message.hdr_from, {
-            contextMessage: message.firstline,
-            buttons: [
-                {
-                    title: 'Открыть'
-                }
-            ]
-        });
+        if(Settings.checkAccountSetting(accountSettings, message.uid, "notification") !== false) {
+            notifications.showNotification("new_message|" + message.mid.toString() + "|" + message.uid.toString(), message.hdr_subject, message.hdr_from, {
+                contextMessage: message.firstline,
+                buttons: [
+                    {
+                        title: 'Открыть'
+                    }
+                ]
+            });
+        }
     }
 }
 

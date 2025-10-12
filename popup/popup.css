@@ -250,11 +250,11 @@ button#compose {
     position: relative;
 }
 
-.account-item._current .select-account:before {
-    content: '\23F5';
+.account-item._current .account-mailbox__unreaded:before {
+    content: '\23F4';
     position: absolute;
     top: calc(50% - 3px);
-    left: -17px;
+    right: -17px;
     transform: translate(0, -50%);
     font-weight: bold;
     color: #ef4747;
@@ -279,6 +279,60 @@ button#compose {
 
 .account-buttons {
     display: flex;
+}
+
+.button-icons{
+    display: none;
+}
+
+.name-column {
+    position: relative;
+}
+
+[data-mode=settings] .button-icons{
+    display: flex;
+    justify-content: center;
+    gap:3px;
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translate(0, -50%);
+    background: #ffffff;
+    box-shadow: 0 0 7px 0px #00000021;
+    padding: 0.2em 0.5em;
+    z-index: 5;
+    border-radius: 2px;
+}
+
+.account-switcher svg{
+    height:18px;
+}
+
+.account-switcher{
+    padding: 6px;
+    border-radius: 100%;
+}
+
+.account-switcher._off {
+    position: relative;
+}
+
+.account-switcher._off:before {
+    content: '';
+    width: 100%;
+    position: absolute;
+    height: 1px;
+    border: 0px solid #ffffff;
+    transform-origin: center;
+    background: #000000;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) rotate(-45deg);
+    opacity: 0.4;
+}
+
+.account-switcher._off svg {
+    opacity: 0.4;
 }
 
 .open-account {

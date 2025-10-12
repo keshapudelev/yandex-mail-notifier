@@ -34,6 +34,63 @@ function openSettings() {
     })
 }
 
+function showAccountSettingsPopup(accountItem) {
+    const uid = accountItem.getAttribute("data-uid");
+    chrome.runtime.sendMessage({
+        "target":"background",
+        "action": "getAccountSettings"
+    }).then(settings=>{
+        if(uid in settings){
+            for(let preference of ["sound", "notification", "counter"]){
+                const button = accountItem.querySelector(".account-switcher[data-action='"+preference+"']")
+                if(preference in settings[uid] && !settings[uid][preference]){
+                    button.classList.add("_off");
+                }
+                else{
+                    button.classList.remove("_off");
+                }
+            }
+        }
+        accountItem.setAttribute("data-mode", "settings")
+    })
+}
+
+function switchPreference(tr, uid, preference, value) {
+    chrome.runtime.sendMessage({
+        action: 'updateAccountSettings',
+        target: 'background',
+        data: {
+            uid: uid,
+            preference: preference,
+            value: value
+        }
+    }).then(settings=>{
+        showAccountSettingsPopup(tr)
+        if(preference === "counter"){
+            loadCounters();
+        }
+    })
+}
+
+function processAccountSwitchers(button) {
+    const tr = button.closest(".account-item");
+    switch(button.getAttribute("data-action")){
+        case "open-settings":
+            const isAlreadyOpened = !!tr.getAttribute("data-mode")
+            document.querySelectorAll(".account-item[data-mode=settings]").forEach(item => item.removeAttribute("data-mode"));
+            if(!isAlreadyOpened){
+                showAccountSettingsPopup(tr)
+            }
+            break;
+        default:
+            const uid = button.closest(".account-item").getAttribute("data-uid");
+            const oldValue = !button.classList.contains("_off");
+            const preference = button.getAttribute("data-action");
+            switchPreference(tr, uid, preference, !oldValue)
+            break;
+    }
+}
+
 document.body.addEventListener('click', (e) => {
     if(e.target.closest("#enter")){
         chrome.tabs.create({"url":"https://passport.yandex.ru/auth?retpath=https%3A%2F%2Fmail.yandex.ru"});
@@ -45,7 +102,7 @@ document.body.addEventListener('click', (e) => {
         chrome.tabs.create({"url":"https://mail.yandex.ru/?uid="+document.body.getAttribute("data-uid")});
     }
     if(e.target.closest("#mail-list__menu-button")){
-        document.body.setAttribute("data-mode", "accounts-list");
+        setWidgetMode("accounts-list");
     }
     if(e.target.closest("#refresh") || e.target.closest("#inline-refresh")){
         loadMessages();
@@ -62,13 +119,16 @@ document.body.addEventListener('click', (e) => {
     if(e.target.closest("#login-new")){
         chrome.tabs.create({"url":"https://passport.yandex.ru/auth/list?login=&retpath=https%3A%2F%2Fmail.yandex.ru"});
     }
+    if(e.target.closest(".account-switcher")){
+        processAccountSwitchers(e.target.closest(".account-switcher"))
+    }
     if(e.target.closest(".select-account")){
         const uid = e.target.closest(".account-item").getAttribute("data-uid");
         if(uid === currentAccount.uid){
             loadMessages();
         }
         else {
-            document.body.setAttribute("data-mode", "spinner");
+            setWidgetMode("spinner");
             chrome.runtime.sendMessage({
                 action: 'changeAccount',
                 target: 'background',
@@ -87,7 +147,7 @@ document.body.addEventListener('click', (e) => {
         else {
             uid = e.target.closest(".account-item").getAttribute("data-uid");
         }
-        document.body.setAttribute("data-mode", "spinner");
+        setWidgetMode("spinner");
         chrome.runtime.sendMessage({
             action: 'logout',
             target: 'background',
