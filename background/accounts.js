@@ -100,6 +100,10 @@ class Accounts{
     async getCKey(uid) {
         if (!cKey) {
             const account_information = await apiConnector.loadAccountInformation();
+            // не удалось получить данные аккаунта - не роняем расширение
+            if (!account_information) {
+                return null;
+            }
             const parsed = await offscreenManager.sendMessage({
                 'type': "PARSE_XML",
                 'data': {
@@ -107,6 +111,11 @@ class Accounts{
                     "selectors": ["account_information > ckey", "account_information > uid"]
                 }
             })
+            // offscreen не ответил (гонка при создании документа) - вернём null,
+            // вызывающий код повторит операцию с новым ckey
+            if (!parsed || !parsed.result) {
+                return null;
+            }
             let result = parsed.result["account_information > ckey"];
             let current_uid = parsed.result["account_information > uid"];
             if (!result || result.length === 0) {

@@ -2,7 +2,21 @@ export default {
     async sendMessage(args){
         await setupOffscreenDocument("offscreen/offscreen.html");
         args.target = 'offscreen';
-        return chrome.runtime.sendMessage(args);
+        // Иногда offscreen-документ не успевает зарегистрировать листенер
+        // сразу после создания - тогда sendMessage возвращает пусто или падает.
+        // Повторяем несколько раз, пока не придёт ответ.
+        for (let attempt = 0; attempt < 5; attempt++) {
+            try {
+                const response = await chrome.runtime.sendMessage(args);
+                if (response) {
+                    return response;
+                }
+            } catch (e) {
+                // приёмник ещё не готов - подождём и повторим
+            }
+            await new Promise(resolve => setTimeout(resolve, 120));
+        }
+        return null;
     }
 }
 

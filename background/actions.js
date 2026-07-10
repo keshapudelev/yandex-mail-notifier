@@ -83,22 +83,35 @@ export function openMessage(uid, mid) {
     });
 }
 
+// Выполняет операцию над письмом с ретраем: если ckey протух или offscreen
+// не отдал ключ, сбрасываем ckey и пробуем ещё раз со свежим.
+async function runMailOper(operFn, mid){
+    for (let attempt = 0; attempt < 2; attempt++) {
+        const cKey = await Accounts.getCKey();
+        if (!cKey) {
+            Accounts.dropCKey();
+            continue;
+        }
+        const result = await operFn(mid, cKey);
+        if (result && result.search("<status reason=\"ok\"/>") !== -1) {
+            return true;
+        }
+        // операция не прошла - возможно, протух ckey; сбросим и повторим
+        Accounts.dropCKey();
+    }
+    return false;
+}
+
 export async function markReaded(uid, mid){
-    let cKey = await Accounts.getCKey()
-    const result = await apiConnector.messageMarkReaded(mid, cKey);
-    return result.search("<status reason=\"ok\"/>") !== -1
+    return runMailOper(apiConnector.messageMarkReaded, mid);
 }
 
 export async function markSpam(uid, mid){
-    let cKey = await Accounts.getCKey()
-    const result = await apiConnector.messageMarkSpam(mid, cKey);
-    return result.search("<status reason=\"ok\"/>") !== -1
+    return runMailOper(apiConnector.messageMarkSpam, mid);
 }
 
 export async function deleteMessage(uid, mid){
-    let cKey = await Accounts.getCKey()
-    const result = await apiConnector.messageDelete(mid, cKey);
-    return result.search("<status reason=\"ok\"/>") !== -1
+    return runMailOper(apiConnector.messageDelete, mid);
 }
 
 const connections = {};
