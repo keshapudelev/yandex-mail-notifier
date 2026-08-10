@@ -248,8 +248,12 @@ function showWarning(message, withRefresh) {
 }
 
 function createBackgroundListener() {
-    chrome.runtime.onMessage.addListener(async (message, sender) =>{
-        if(message.target !== "popup") return;
+    chrome.runtime.onMessage.addListener((message, sender) =>{
+        // Async listeners implicitly answer every runtime message with a Promise,
+        // even when the message is intended for another extension context. This
+        // listener must stay synchronous so it cannot win the response race with
+        // the offscreen XML parser.
+        if(message.target !== "popup") return false;
         switch(message.action) {
             case "initialize":
                 initialize();
@@ -291,6 +295,7 @@ function createBackgroundListener() {
                 handleNewVersionData(message.data);
                 break;
         }
+        return false;
     })
 }
 

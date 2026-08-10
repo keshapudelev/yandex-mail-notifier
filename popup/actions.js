@@ -22,7 +22,15 @@ function messageButtonClicked(action, mid, uid) {
         target: "background"
     }).then(result => {
         if(result){
-            document.querySelector(".message-item[data-mid='"+mid+"']").remove();
+            const messageItem = document.querySelector(".message-item[data-mid='"+mid+"']");
+            if(messageItem) messageItem.remove();
+        }
+        else if(action !== "reply"){
+            showWarning("Не удалось выполнить действие. Попробуйте ещё раз", 1);
+        }
+    }).catch(() => {
+        if(action !== "reply"){
+            showWarning("Не удалось выполнить действие. Попробуйте ещё раз", 1);
         }
     })
 }

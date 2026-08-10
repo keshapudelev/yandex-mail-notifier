@@ -110,13 +110,19 @@ export function listenToPopup() {
                 Accounts.logout(message.data.uid);
                 break;
             case "markRead":
-                actions.markReaded(message.data.uid, message.data.mid).then((result) => sendResponse(result))
+                actions.markReaded(message.data.uid, message.data.mid)
+                    .then((result) => sendResponse(result))
+                    .catch(() => sendResponse(false))
                 break;
             case "markSpam":
-                actions.markSpam(message.data.uid, message.data.mid).then((result) => sendResponse(result))
+                actions.markSpam(message.data.uid, message.data.mid)
+                    .then((result) => sendResponse(result))
+                    .catch(() => sendResponse(false))
                 break;
             case "delete":
-                actions.deleteMessage(message.data.uid, message.data.mid).then((result) => sendResponse(result))
+                actions.deleteMessage(message.data.uid, message.data.mid)
+                    .then((result) => sendResponse(result))
+                    .catch(() => sendResponse(false))
                 break;
             case "reply":
                 actions.markReaded(message.data.uid, message.data.mid)
